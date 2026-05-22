@@ -375,6 +375,9 @@ type JobInfo struct {
 
 	ScheduleStartTimestamp metav1.Time
 
+	// EnqueueTimestamp records when the job entered Inqueue phase.
+	EnqueueTimestamp metav1.Time
+
 	Preemptable bool
 
 	// RevocableZone support set volcano.sh/revocable-zone annotation or label for pod/podgroup
@@ -451,6 +454,7 @@ func (ji *JobInfo) SetPodGroup(pg *PodGroup) {
 	oldPG := ji.PodGroup
 	ji.PgUID = pg.UID
 	ji.PodGroup = pg
+	ji.EnqueueTimestamp = pg.Status.EnqueueTimestamp
 
 	if oldPG == nil || !equality.Semantic.DeepEqual(oldPG.Spec.SubGroupPolicy, pg.Spec.SubGroupPolicy) {
 		clear(ji.SubJobs)
@@ -718,6 +722,7 @@ func (ji *JobInfo) Clone() *JobInfo {
 	}
 
 	ji.CreationTimestamp.DeepCopyInto(&info.CreationTimestamp)
+	ji.EnqueueTimestamp.DeepCopyInto(&info.EnqueueTimestamp)
 
 	for task, minAvailable := range ji.TaskMinAvailable {
 		info.TaskMinAvailable[task] = minAvailable

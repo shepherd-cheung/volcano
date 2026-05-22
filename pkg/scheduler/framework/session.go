@@ -138,6 +138,7 @@ type Session struct {
 	jobValidFns                   map[string]api.ValidateExFn
 	jobEnqueueableFns             map[string]api.VoteFn
 	jobEnqueuedFns                map[string]api.JobEnqueuedFn
+	jobPreemptedFns               map[string]api.JobPreemptedFn
 	targetJobFns                  map[string]api.TargetJobFn
 	reservedNodesFns              map[string]api.ReservedNodesFn
 	victimTasksFns                map[string][]api.VictimTasksFn
@@ -209,6 +210,7 @@ func openSession(cache cache.Cache) *Session {
 		jobValidFns:                   map[string]api.ValidateExFn{},
 		jobEnqueueableFns:             map[string]api.VoteFn{},
 		jobEnqueuedFns:                map[string]api.JobEnqueuedFn{},
+		jobPreemptedFns:               map[string]api.JobPreemptedFn{},
 		targetJobFns:                  map[string]api.TargetJobFn{},
 		reservedNodesFns:              map[string]api.ReservedNodesFn{},
 		victimTasksFns:                map[string][]api.VictimTasksFn{},
@@ -619,6 +621,7 @@ func jobStatus(ssn *Session, jobInfo *api.JobInfo) scheduling.PodGroupStatus {
 	status.Running = int32(len(jobInfo.TaskStatusIndex[api.Running]))
 	status.Failed = int32(len(jobInfo.TaskStatusIndex[api.Failed]))
 	status.Succeeded = int32(len(jobInfo.TaskStatusIndex[api.Succeeded]))
+	status.EnqueueTimestamp = jobInfo.EnqueueTimestamp
 
 	return status
 }

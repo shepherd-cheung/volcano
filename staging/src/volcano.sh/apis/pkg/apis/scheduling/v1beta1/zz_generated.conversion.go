@@ -466,6 +466,7 @@ func autoConvert_v1beta1_PodGroupStatus_To_scheduling_PodGroupStatus(in *PodGrou
 	out.Running = in.Running
 	out.Succeeded = in.Succeeded
 	out.Failed = in.Failed
+	out.EnqueueTimestamp = in.EnqueueTimestamp
 	return nil
 }
 
@@ -480,6 +481,7 @@ func autoConvert_scheduling_PodGroupStatus_To_v1beta1_PodGroupStatus(in *schedul
 	out.Running = in.Running
 	out.Succeeded = in.Succeeded
 	out.Failed = in.Failed
+	out.EnqueueTimestamp = in.EnqueueTimestamp
 	return nil
 }
 

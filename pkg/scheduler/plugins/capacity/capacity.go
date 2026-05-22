@@ -286,18 +286,37 @@ func (cp *capacityPlugin) OnSessionOpen(ssn *framework.Session) {
 			return util.Reject
 		}
 
-		// job enqueued
-		deductedResources := job.DeductSchGatedResources(job.GetMinResources())
-		attr.inqueue.Add(deductedResources)
-		// If enable hierarchy, update the inqueue resource for all ancestors queues
-		if hierarchyEnabled {
-			for _, ancestorID := range attr.ancestors {
-				ancestorAttr := cp.queueOpts[ancestorID]
-				ancestorAttr.inqueue.Add(deductedResources)
+		return util.Permit
+	})
+
+	ssn.AddJobEnqueuedFn(cp.Name(), func(obj interface{}) {
+		job := obj.(*api.JobInfo)
+		attr := cp.queueOpts[job.Queue]
+		if job.PodGroup.Spec.MinResources != nil {
+			deductedResources := job.DeductSchGatedResources(job.GetMinResources())
+			attr.inqueue.Add(deductedResources)
+			if hierarchyEnabled {
+				for _, ancestorID := range attr.ancestors {
+					ancestorAttr := cp.queueOpts[ancestorID]
+					ancestorAttr.inqueue.Add(deductedResources)
+				}
 			}
 		}
-		klog.V(5).Infof("job <%s/%s> enqueued", job.Namespace, job.Name)
-		return util.Permit
+	})
+
+	ssn.AddJobPreemptedFn(cp.Name(), func(obj interface{}) {
+		job := obj.(*api.JobInfo)
+		attr := cp.queueOpts[job.Queue]
+		if job.PodGroup.Spec.MinResources != nil {
+			resources := job.DeductSchGatedResources(job.GetMinResources())
+			attr.inqueue.Sub(resources)
+			if hierarchyEnabled {
+				for _, ancestorID := range attr.ancestors {
+					ancestorAttr := cp.queueOpts[ancestorID]
+					ancestorAttr.inqueue.Sub(resources)
+				}
+			}
+		}
 	})
 
 	ssn.AddPrePredicateFn(cp.Name(), func(task *api.TaskInfo) error {

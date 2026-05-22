@@ -320,6 +320,10 @@ type PodGroupStatus struct {
 	// +kubebuilder:validation:Minimum=0
 	// +optional
 	Failed int32 `json:"failed,omitempty" protobuf:"bytes,5,opt,name=failed"`
+
+	// The timestamp when the PodGroup entered the Inqueue phase.
+	// +optional
+	EnqueueTimestamp metav1.Time `json:"enqueueTimestamp,omitempty" protobuf:"bytes,6,opt,name=enqueueTimestamp"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

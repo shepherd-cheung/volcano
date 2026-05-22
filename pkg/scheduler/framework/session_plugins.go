@@ -146,6 +146,11 @@ func (ssn *Session) AddJobEnqueuedFn(name string, fn api.JobEnqueuedFn) {
 	ssn.jobEnqueuedFns[name] = fn
 }
 
+// AddJobPreemptedFn add jobPreempted function
+func (ssn *Session) AddJobPreemptedFn(name string, fn api.JobPreemptedFn) {
+	ssn.jobPreemptedFns[name] = fn
+}
+
 // AddTargetJobFn add targetjob function
 func (ssn *Session) AddTargetJobFn(name string, fn api.TargetJobFn) {
 	ssn.targetJobFns[name] = fn
@@ -562,6 +567,23 @@ func (ssn *Session) JobEnqueued(obj interface{}) {
 				continue
 			}
 			fn, found := ssn.jobEnqueuedFns[plugin.Name]
+			if !found {
+				continue
+			}
+
+			fn(obj)
+		}
+	}
+}
+
+// JobPreempted invoke jobPreemptedFns function of the plugins
+func (ssn *Session) JobPreempted(obj interface{}) {
+	for _, tier := range ssn.Tiers {
+		for _, plugin := range tier.Plugins {
+			if !isEnabled(plugin.EnabledJobEnqueued) {
+				continue
+			}
+			fn, found := ssn.jobPreemptedFns[plugin.Name]
 			if !found {
 				continue
 			}

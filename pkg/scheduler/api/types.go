@@ -311,6 +311,9 @@ type VoteFn func(interface{}) int
 // JobEnqueuedFn is the func declaration used to call after job enqueued.
 type JobEnqueuedFn func(interface{})
 
+// JobPreemptedFn is the func declaration used to call after a job is preempted from inqueue.
+type JobPreemptedFn func(interface{})
+
 // PredicateFn is the func declaration used to predicate node for task.
 type PredicateFn func(*TaskInfo, *NodeInfo) error
 
